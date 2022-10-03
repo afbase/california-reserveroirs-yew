@@ -7,7 +7,7 @@ use chrono::{Duration, NaiveDate};
 use data_point::DataPoint;
 use chart_model::ChartModel;
 use svg::node::element::Group;
-use yew::prelude::*;
+use yew::{prelude::*, virtual_dom::VNode};
 
 pub enum Events {
     StartDateUpdated(NaiveDate),
@@ -56,7 +56,21 @@ impl Component for ChartModel {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        self.to_chart_svg().to_html()
+        let mut map: Vec<VNode> = Vec::with_capacity(3);
+        let start_date_input = html! { <div name="div-startdate"> <input type="date" name="startdate" value="2017-06-01"/> </div>};
+        let end_date_input = html! { <div name="div-enddate"> <input type="date" name="enddate" value="2017-06-10"/> </div>};
+        map.append(start_date_input);
+        map.append(end_date_input);
+        map.append(self.to_chart_svg().to_html());
+        html!{
+            <div id="chart">
+                {
+                    map.iter().map(|value| {
+                        value
+                    }).collect::<Html>()
+                }
+            </div>
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -66,7 +80,7 @@ impl Component for ChartModel {
                 true
             },
             Events::StartDateUpdated(new_start_date) => {
-                self.update_start_date(new_start_date)
+                self.update_start_date(new_start_date);
                 true
             }
         }
