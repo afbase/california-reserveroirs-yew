@@ -1,9 +1,11 @@
-mod data_point;
+mod crate::data_point;
 use charts::{ScaleBand, ScaleLinear, LineSeriesView, MarkerType, Chart};
 use data_point::DataPoint;
 use chrono::{Duration, NaiveDate};
 use svg::node::element::Group;
 use yew::Html;
+
+use crate::data_point;
 #[derive(Debug, Clone)]
 pub struct ChartModel {
     label: String,

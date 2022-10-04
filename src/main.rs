@@ -7,7 +7,7 @@ use chrono::{Duration, NaiveDate};
 use data_point::DataPoint;
 use chart_model::ChartModel;
 use svg::node::element::Group;
-use yew::{prelude::*, virtual_dom::VNode};
+use yew::{prelude::*, virtual_dom::VNode, utils::print_node};
 
 pub enum Events {
     StartDateUpdated(NaiveDate),
@@ -57,20 +57,21 @@ impl Component for ChartModel {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let mut map: Vec<VNode> = Vec::with_capacity(3);
-        let start_date_input = html! { <div name="div-startdate"> <input type="date" name="startdate" value="2017-06-01"/> </div>};
-        let end_date_input = html! { <div name="div-enddate"> <input type="date" name="enddate" value="2017-06-10"/> </div>};
-        map.append(start_date_input);
-        map.append(end_date_input);
-        map.append(self.to_chart_svg().to_html());
-        html!{
-            <div id="chart">
-                {
-                    map.iter().map(|value| {
-                        value
-                    }).collect::<Html>()
-                }
-            </div>
-        }
+        let start_date_input = String::from(r#"<div name="div-startdate"> <input type="date" name="startdate" value="2017-06-01"/> </div>"#);
+        let end_date_input = String::from(r#"<div name="div-enddate"> <input type="date" name="enddate" value="2017-06-10"/> </div>"#);
+        let chart_str = self.to_chart_svg().to_string();
+        web_sys::window()
+        .and_then(|window| window.document())
+        .map_or_else(|| {
+            html! { <p>{ "Failed to resolve `document`." }</p> }
+        }, |document| match document.create_element("div") {
+            Ok(div) => {
+                let output = format!("{}{}{}", chart_str, start_date_input, end_date_input);
+                div.set_inner_html(&output);
+                yew::virtual_dom::VNode::VRef(div.into())
+            }
+            Err(e) => html! { <p>{ format!("{:?}", &e) }</p> },
+        })
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -84,9 +85,10 @@ impl Component for ChartModel {
                 true
             }
         }
-        todo!()
     }
 }
 
 
-fn main() {}
+fn main() {
+    yew::start_app()::<ChartModel>();
+}
