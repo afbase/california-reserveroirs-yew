@@ -1,15 +1,27 @@
-mod crate::data_point;
+use std::{mem, ops::RangeInclusive};
+
 use charts::{ScaleBand, ScaleLinear, LineSeriesView, MarkerType, Chart};
-use data_point::DataPoint;
+use crate::data_point::DataPoint;
 use chrono::{Duration, NaiveDate};
 use svg::node::element::Group;
 use yew::Html;
 
-use crate::data_point;
 #[derive(Debug, Clone)]
 pub struct ChartModel {
-    label: String,
-    data: Vec<DataPoint>,
+    pub label: String,
+    pub data: Vec<DataPoint>,
+}
+
+impl Iterator for RangeInclusive<NaiveDate> {
+    type Item = NaiveDate;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 <= self.1 {
+            let next = self.0 + Duration::days(1);
+            Some(mem::replace(&mut self.0, next))
+        } else {
+            None
+        }
+    }
 }
 
 impl ChartModel {
@@ -24,7 +36,7 @@ impl ChartModel {
             .into_iter()
             .map(|idx| {
                 let date = start_date + Duration::days(idx as i64);
-                let acre_feet = idx as u32;
+                let acre_feet = idx as f32;
                 DataPoint { date, acre_feet }
             })
             .collect();
@@ -33,9 +45,9 @@ impl ChartModel {
 
     pub fn update_start_date(&mut self, new_start_date: NaiveDate) {
         self.data.sort();
-        let start_date = self.data.first().unwrap();
-        let end_date = self.data.last().unwrap();
-        let data: Vec<DataPoint> = (start_date..end_date)
+        let start_date = self.data.first().unwrap().date;
+        let end_date = self.data.last().unwrap().date;
+        let data: Vec<DataPoint> = (start_date..=end_date)
         .into_iter()
         .enumerate()
         .map(|(idx, d)| {

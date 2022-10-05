@@ -7,8 +7,8 @@ use std::cmp::{PartialEq, Eq, PartialOrd, Ordering};
 
 #[derive(Debug, Clone)]
 pub struct DataPoint {
-    date: NaiveDate,
-    acre_feet: f32,
+    pub date: NaiveDate,
+    pub acre_feet: f32,
 }
 
 impl std::cmp::PartialEq for DataPoint {
@@ -23,6 +23,7 @@ impl std::cmp::PartialEq for DataPoint {
 impl Eq for DataPoint {
     
 }
+
 impl Ord for DataPoint {
     fn cmp(&self, other: &Self) -> Ordering {
         self.date.cmp(&other.date)
@@ -64,6 +65,7 @@ impl Ord for DataPoint {
         }
     }
 }
+
 impl std::cmp::PartialOrd for DataPoint {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
