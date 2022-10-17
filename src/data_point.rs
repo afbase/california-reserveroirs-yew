@@ -2,8 +2,8 @@ use charts::{
     Chart, LineSeriesView, MarkerType, PointDatum, PointLabelPosition, ScaleBand, ScaleLinear,
 };
 use chrono::{Duration, NaiveDate};
+use std::cmp::{Eq, Ordering, PartialEq, PartialOrd};
 use yew::prelude::*;
-use std::cmp::{PartialEq, Eq, PartialOrd, Ordering};
 
 #[derive(Debug, Clone)]
 pub struct DataPoint {
@@ -16,13 +16,11 @@ impl std::cmp::PartialEq for DataPoint {
         self.date == other.date
     }
 
-    fn ne(&self, other: &Self) -> bool { 
+    fn ne(&self, other: &Self) -> bool {
         !DataPoint::eq(self, other)
-     }
+    }
 }
-impl Eq for DataPoint {
-    
-}
+impl Eq for DataPoint {}
 
 impl Ord for DataPoint {
     fn cmp(&self, other: &Self) -> Ordering {
@@ -71,22 +69,22 @@ impl std::cmp::PartialOrd for DataPoint {
         Some(self.cmp(other))
     }
 
-    fn lt(&self, other: &Self) -> bool { 
+    fn lt(&self, other: &Self) -> bool {
         self.date < other.date
-     }
-    fn le(&self, other: &Self) -> bool { 
+    }
+    fn le(&self, other: &Self) -> bool {
         let eq = self.date == other.date;
         let lt = self.date < other.date;
         eq || lt
-     }
-    fn gt(&self, other: &Self) -> bool { 
+    }
+    fn gt(&self, other: &Self) -> bool {
         !DataPoint::le(self, other)
-     }
-    fn ge(&self, other: &Self) -> bool { 
+    }
+    fn ge(&self, other: &Self) -> bool {
         let eq = self.date == other.date;
         let gt = self.date > other.date;
         eq || gt
-     }
+    }
 }
 
 impl PointDatum<String, f32> for DataPoint {

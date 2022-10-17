@@ -1,8 +1,7 @@
-use std::{mem, ops::RangeInclusive};
-
-use charts::{ScaleBand, ScaleLinear, LineSeriesView, MarkerType, Chart};
 use crate::data_point::DataPoint;
+use charts::{Chart, LineSeriesView, MarkerType, ScaleBand, ScaleLinear};
 use chrono::{Duration, NaiveDate};
+use std::{mem, ops::RangeInclusive};
 use svg::node::element::Group;
 use yew::Html;
 
@@ -10,18 +9,6 @@ use yew::Html;
 pub struct ChartModel {
     pub label: String,
     pub data: Vec<DataPoint>,
-}
-
-impl Iterator for RangeInclusive<NaiveDate> {
-    type Item = NaiveDate;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.0 <= self.1 {
-            let next = self.0 + Duration::days(1);
-            Some(mem::replace(&mut self.0, next))
-        } else {
-            None
-        }
-    }
 }
 
 impl ChartModel {
@@ -47,15 +34,17 @@ impl ChartModel {
         self.data.sort();
         let start_date = self.data.first().unwrap().date;
         let end_date = self.data.last().unwrap().date;
-        let data: Vec<DataPoint> = (start_date..=end_date)
-        .into_iter()
-        .enumerate()
-        .map(|(idx, d)| {
-            let date = start_date + Duration::days(idx as i64);
-            let acre_feet = idx as f32;
-            DataPoint{date,acre_feet}
-        })
-        .collect();
+        let duration = (end_date - start_date).num_days() as usize;
+        let data: Vec<DataPoint> = start_date
+            .iter_days()
+            .take(duration)
+            .enumerate()
+            .map(|(idx, d)| {
+                let date = start_date + Duration::days(idx as i64);
+                let acre_feet = idx as f32;
+                DataPoint { date, acre_feet }
+            })
+            .collect();
         self.data = data;
     }
 
