@@ -1,9 +1,8 @@
-use crate::data_point::DataPoint;
+use crate::{data_point::DataPoint, string_log};
 use charts::{Chart, LineSeriesView, MarkerType, ScaleBand, ScaleLinear};
 use chrono::{Duration, NaiveDate};
-use std::{mem, ops::RangeInclusive};
 use svg::node::element::Group;
-use yew::Html;
+
 
 #[derive(Debug, Clone)]
 pub struct ChartModel {
@@ -30,16 +29,25 @@ impl ChartModel {
         Self { label, data }
     }
 
-    pub fn update_start_date(&mut self, new_start_date: NaiveDate) {
+    pub fn update_start_date(&mut self, new_date: NaiveDate) {
         self.data.sort();
-        let start_date = self.data.first().unwrap().date;
-        let end_date = self.data.last().unwrap().date;
-        let duration = (end_date - start_date).num_days() as usize;
+        let (start_date, end_date) = {
+            let start = self.data.first().unwrap().date;
+            let end = self.data.last().unwrap().date;
+            if new_date < start {
+                (new_date, start)
+            } else if start <= new_date && new_date <= end {
+                (start, new_date)
+            } else {
+                (start, new_date)
+            }
+        };
+        let duration = ((end_date - start_date).num_days() + 1) as usize;
         let data: Vec<DataPoint> = start_date
             .iter_days()
             .take(duration)
             .enumerate()
-            .map(|(idx, d)| {
+            .map(|(idx, _d)| {
                 let date = start_date + Duration::days(idx as i64);
                 let acre_feet = idx as f32;
                 DataPoint { date, acre_feet }
@@ -83,8 +91,13 @@ impl ChartModel {
             .into_iter()
             .map(|x| x.acre_feet as f32)
             .collect();
+        let y_max = y_f32.iter().clone().fold(f32::NEG_INFINITY, |a, &b| a.max(b));
+        let y_min = y_f32.iter().clone().fold(f32::INFINITY, |a, &b| a.min(b));
+        let y_domain_log_string = format!("y_domain[min, max]: [{}, {}]", y_min, y_max);
+        string_log(y_domain_log_string);
+        let y_domain = vec![y_min, y_max];
         let y = ScaleLinear::new()
-            .set_domain(y_f32)
+            .set_domain(y_domain)
             .set_range(vec![height - top - bottom, 0]);
 
         // You can use your own iterable as data as long as its items implement the `PointDatum` trait.
@@ -114,13 +127,5 @@ impl ChartModel {
             .to_svg()
             .unwrap();
         chart_svg
-    }
-
-    fn get_end_date_input(&self) -> Html {
-        todo!()
-    }
-
-    fn get_start_date_input(&self) -> Html {
-        todo!()
     }
 }

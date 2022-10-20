@@ -1,9 +1,6 @@
-use charts::{
-    Chart, LineSeriesView, MarkerType, PointDatum, PointLabelPosition, ScaleBand, ScaleLinear,
-};
-use chrono::{Duration, NaiveDate};
-use std::cmp::{Eq, Ordering, PartialEq, PartialOrd};
-use yew::prelude::*;
+use charts::{PointDatum};
+use chrono::{ NaiveDate};
+use std::cmp::{Eq, Ordering};
 
 #[derive(Debug, Clone)]
 pub struct DataPoint {
@@ -14,10 +11,6 @@ pub struct DataPoint {
 impl std::cmp::PartialEq for DataPoint {
     fn eq(&self, other: &Self) -> bool {
         self.date == other.date
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        !DataPoint::eq(self, other)
     }
 }
 impl Eq for DataPoint {}
